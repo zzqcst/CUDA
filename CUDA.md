@@ -95,3 +95,35 @@ CUDA线程可以在执行期间从多个内存空间访问数据，如图所示�
 ![image](https://note.youdao.com/yws/public/resource/a316463a0e3ab0424a29e5a0c00b2395/xmlnote/3F796910F8BC43E0B152072CB27D69E8/2942)
 
 所有线程都可以访问两个额外的只读存储空间：常量和纹理存储空间。 全局，常量和纹理内存空间针对不同的内存使用进行了优化（[请参阅设备内存访问](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses)）。 纹理存储器还为某些特定数据格式提供不同的寻址模式以及数据滤波（[请参阅纹理和表面存储器](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#texture-and-surface-memory)）。
+
+全局，常量和纹理内存空间在同一应用程序的内核启动之间是持久存在的。
+
+#### 异构编程
+如图8所示，CUDA编程模型假设CUDA线程在物理上独立的设备上执行，该设备作为运行C程序的主机的协处理器运行。 例如，当内核在GPU上执行而其余的C程序在CPU上执行时就是这种情况。
+
+CUDA编程模型还假设主机和设备都在DRAM中保持它们自己独立的存储空间，分别称为主机存储器和设备存储器。 因此，程序通过调用CUDA运行时（在[编程接口](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#programming-interface)中描述）来管理内核可见的全局，常量和纹理内存空间。 这包括设备内存分配和释放以及主机和设备内存之间的数据传输。
+
+Unified Memory提供托管内存以桥接主机和设备内存空间。 可以从系统中的所有CPU和GPU访问托管内存，作为具有公共地址空间的单个连贯内存映像。 此功能可实现设备内存的超额预订，并且无需在主机和设备上显式镜像数据，从而大大简化了移植应用程序的任务。 有关统一内存的介绍，请参阅[统一内存编程](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-unified-memory-programming-hd0)。
+
+![](https://note.youdao.com/yws/public/resource/a316463a0e3ab0424a29e5a0c00b2395/xmlnote/3C43B5D6EDB74EB5BD66D8A06EC43A2A/2953)
+
+#### 计算能力
+设备的计算能力由版本号表示，有时也称为“SM版本”。 此版本号标识GPU硬件支持的功能，并由运行时的应用程序用于确定当前GPU上可用的硬件功能和（或）指令。
+
+计算能力包括主修订号X和次修订号Y，并由X.Y表示。
+
+具有相同主要版本号的设备具有相同的核心架构。 基于Volta架构的设备的主要版本号为7，基于Pascal架构的设备为6，基于Maxwell架构的设备为5，基于Kepler架构的设备为3，基于Fermi架构的设备为2， 和1用于基于特斯拉架构的设备。
+
+次要修订号对应于核心架构的增量改进，可能包括新功能。
+
+[启用CUDA的GPU](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-enabled-gpus)列出了所有支持CUDA的设备及其计算功能。 [Compute Capabilities](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities)提供每种计算能力的技术规范。
+
+>注：特定GPU的计算能力版本不应与CUDA版本(例如CUDA 7.5、CUDA 8、CUDA 9)相混淆，CUDA版本是CUDA软件平台的版本。应用程序开发人员使用CUDA平台创建在许多代GPU体系结构上运行的应用程序，包括尚未发明的未来GPU体系结构。虽然新版本的CUDA平台通常通过支持新GPU体系结构的计算能力版本来添加对该体系结构的本地支持，但新版本的CUDA平台通常还包含独立于硬件的软件功能。
+
+从CUDA 7.0和CUDA 9.0开始，不再支持Tesla和Fermi架构。
+
+## 编程接口
+CUDA C为熟悉C编程语言的用户提供了一条简单的路径，可以轻松编写程序以供设备执行。
+
+它由C语言的最小扩展集和运行时库组成。
+
